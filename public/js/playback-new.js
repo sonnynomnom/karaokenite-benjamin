@@ -1,5 +1,5 @@
 // const sonny = io.connect(window.location.origin);
-const sonny = socket;
+const sonny1 = socket;
 // const queryString = window.location.search;
 // const urlParams = new URLSearchParams(queryString);
 // const roomName = urlParams.get('room');
@@ -25,7 +25,7 @@ var video_count = 0;
 
 function nextFunction() {
   console.log('nextFunction!');
-  sonny.emit('next', roomName);
+  sonny1.emit('next', roomName);
   video_count++;
 
   if (video_count == playlist.length) video_count = 0;
@@ -57,7 +57,7 @@ if (el.addEventListener) {
 // var video_count = 0;
 
 function backFunction() {
-  sonny.emit('prev', roomName);
+  sonny1.emit('prev', roomName);
 
   if (video_count != 0) {
     video_count--;
@@ -88,7 +88,7 @@ if (el.addEventListener) {
 }
 
 function volumnDownFunction() {
-  sonny.emit('voldec', roomName);
+  sonny1.emit('voldec', roomName);
 
   var video = document.querySelector('#karaoke-video');
   // video.volume = 0.5;
@@ -110,7 +110,7 @@ if (el.addEventListener) {
 }
 
 function volumnUpFunction() {
-  sonny.emit('volinc', roomName);
+  sonny1.emit('volinc', roomName);
 
   var video = document.querySelector('#karaoke-video');
   // video.volume = 1.0;
@@ -119,7 +119,7 @@ function volumnUpFunction() {
   console.log('Volume set to low');
 }
 
-sonny.on('prev', function () {
+sonny1.on('prev', function () {
   console.log('prev event gotten on the client');
 
   if (video_count != 0) {
@@ -138,7 +138,7 @@ sonny.on('prev', function () {
   console.log('host setting video to ', playlist[video_count]);
 });
 
-sonny.on('next', function () {
+sonny1.on('next', function () {
   console.log('Next event gotten on the client');
 
   video_count++;
@@ -157,7 +157,7 @@ sonny.on('next', function () {
   console.log('host setting video to ', playlist[video_count]);
 });
 
-sonny.on('voldec', function () {
+sonny1.on('voldec', function () {
   console.log('Volume - event gotten on the client');
 
   var video = document.querySelector('#karaoke-video');
@@ -167,7 +167,7 @@ sonny.on('voldec', function () {
   console.log('Volume set to low');
 });
 
-sonny.on('volinc', function () {
+sonny1.on('volinc', function () {
   console.log('Volume + event gotten on the client');
 
   var video = document.querySelector('#karaoke-video');

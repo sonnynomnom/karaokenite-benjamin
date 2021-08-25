@@ -11,8 +11,8 @@ const https = require('https');
 var base = process.env.PWD;
 
 const options = {
-  key: fs.readFileSync(base + '/public/ssl/key.pem', 'utf-8'),
-  cert: fs.readFileSync(base + '/public/ssl/cert.pem', 'utf-8'),
+  key: fs.readFileSync('./public/ssl/key.pem', 'utf-8'),
+  cert: fs.readFileSync('./public/ssl/cert.pem', 'utf-8'),
 };
 
 // Get port or default to 8080

@@ -23,14 +23,17 @@ module.exports = (io) => {
     socket.join(roomName);
 
     if (!rooms[roomName]) {
-      rooms[roomName] = {};
+      rooms[roomName] = {
+        sockets: {},
+        playlist: []
+      };
     }
 
     console.log(`Client ${socket.id} joined to room ${roomName}`);
 
     // Initiate the connection process as soon as the client connects
     // Old code: peers[socket.id] = socket;
-    rooms[roomName][socket.id] = socket;
+    rooms[roomName].sockets[socket.id] = socket;
 
     // Asking all other clients to setup the peer connection receiver
     socket.to(roomName).emit('initReceive', socket.id);
@@ -50,7 +53,7 @@ module.exports = (io) => {
       );
 
       // Old code: if (!peers[data.socket_id]) return;
-      if (!rooms[roomName][data.socket_id]) {
+      if (!rooms[roomName].sockets[data.socket_id]) {
         return;
       }
 
@@ -60,7 +63,7 @@ module.exports = (io) => {
       //   signal: data.signal,
       // });
 
-      rooms[roomName][data.socket_id].emit('signal', {
+      rooms[roomName].sockets[data.socket_id].emit('signal', {
         socket_id: socket.id,
         signal: data.signal,
       });
@@ -80,10 +83,10 @@ module.exports = (io) => {
       socket.to(roomName).emit('removePeer', socket.id);
       // Old code: socket.broadcast.emit('removePeer', socket.id);
       // Old code: delete peers[socket.id];
-      delete rooms[roomName][socket.id];
+      delete rooms[roomName].sockets[socket.id];
 
       // Delete room if there's no socket.
-      if (isEmpty(rooms[roomName])) {
+      if (isEmpty(rooms[roomName].sockets)) {
         delete rooms[roomName];
         console.log(`Room ${roomName} was deleted because no one is in it.`);
       }
@@ -94,7 +97,7 @@ module.exports = (io) => {
 
     socket.on('initSend', (init_socket_id) => {
       console.log('INIT SEND by ' + socket.id + ' for ' + init_socket_id);
-      rooms[roomName][init_socket_id].emit('initSend', socket.id);
+      rooms[roomName].sockets[init_socket_id].emit('initSend', socket.id, rooms[roomName].playlist);
     });
 
     // Triggered when a user presses the play button
@@ -161,6 +164,17 @@ module.exports = (io) => {
         `Client ${socket.id} in room ${roomName} emitted 'Prev' event.`
       );
       socket.to(roomName).emit('prev');
+    });
+
+    // Triggered when a user presses the "Choose Song" button
+    socket.on('addSongToPlaylist', function (songUrl) {
+      console.log(
+        `Client ${socket.id} in room ${roomName} emitted 'addSongToPlaylist' event.`
+      );
+
+      rooms[roomName].playlist.push(songUrl);
+
+      socket.to(roomName).emit('addSongToPlaylist', songUrl);
     });
   });
 };

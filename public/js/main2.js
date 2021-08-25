@@ -102,8 +102,9 @@ function init() {
     socket.emit('initSend', socket_id);
   });
 
-  socket.on('initSend', (socket_id) => {
+  socket.on('initSend', (socket_id, playlist1) => {
     console.log('INIT SEND ' + socket_id);
+    playlist.push(...playlist1);
     addPeer(socket_id, true);
   });
 
@@ -121,6 +122,10 @@ function init() {
 
   socket.on('signal', (data) => {
     peers[data.socket_id].signal(data.signal);
+  });
+
+  socket.on('addSongToPlaylist', (songUrl) => {
+    playlist.push(songUrl);
   });
 
   // Username:
