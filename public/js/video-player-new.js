@@ -91,12 +91,12 @@
       checkVolume(dir);
     };
 
-    sonny.on('play', function () {
+    sonny.on(SE_PLAY, function () {
       console.log('play event gotten on the client');
       video.play();
     });
 
-    sonny.on('pause', function () {
+    sonny.on(SE_PAUSE, function () {
       console.log('pause event gotten on the client');
       video.pause();
     });
@@ -209,10 +209,10 @@
     playpause.addEventListener('click', function (e) {
       if (video.paused || video.ended) {
         video.play();
-        sonny.emit('play', roomName);
+        sonny.emit(SE_PLAY, roomName);
       } else {
         video.pause();
-        sonny.emit('pause', roomName);
+        sonny.emit(SE_PAUSE, roomName);
       }
     });
 

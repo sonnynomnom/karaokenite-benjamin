@@ -1312,7 +1312,7 @@
 
       function addSong() {
         playlist.push(jukebox[selectedIndex]);
-        sonny2.emit('addSongToPlaylist', jukebox[selectedIndex]);
+        sonny2.emit(SE_ADD_SONG_TO_PLAYLIST, jukebox[selectedIndex]);
 
         console.log('playlist pushed');
 

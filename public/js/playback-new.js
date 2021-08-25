@@ -25,7 +25,7 @@ var video_count = 0;
 
 function nextFunction() {
   console.log('nextFunction!');
-  sonny1.emit('next', roomName);
+  sonny1.emit(SE_NEXT, roomName);
   video_count++;
 
   if (video_count == playlist.length) video_count = 0;
@@ -57,7 +57,7 @@ if (el.addEventListener) {
 // var video_count = 0;
 
 function backFunction() {
-  sonny1.emit('prev', roomName);
+  sonny1.emit(SE_PREV, roomName);
 
   if (video_count != 0) {
     video_count--;
@@ -119,7 +119,7 @@ function volumnUpFunction() {
   console.log('Volume set to low');
 }
 
-sonny1.on('prev', function () {
+sonny1.on(SE_PREV, function () {
   console.log('prev event gotten on the client');
 
   if (video_count != 0) {
@@ -138,7 +138,7 @@ sonny1.on('prev', function () {
   console.log('host setting video to ', playlist[video_count]);
 });
 
-sonny1.on('next', function () {
+sonny1.on(SE_NEXT, function () {
   console.log('Next event gotten on the client');
 
   video_count++;

@@ -1,6 +1,20 @@
 // Old code: peers = {};
 var rooms = {};
 
+// Socket event constants.
+const SE_INIT = "Init",
+      SE_NEW_USER_ADDED = "NewUserAdded",
+      SE_EXISTING_USER_NOTIFY = "ExistingUserNotify",
+      SE_USER_REMOVED = "UserRemoved",
+      SE_DISCONNECT = "disconnect", // Do not change this name because it is a system event.
+      SE_SIGNAL = "Signal",
+      SE_PLAY = "Play",
+      SE_PAUSE = "Pause",
+      SE_PREV = "Prev",
+      SE_NEXT = "Next",
+      SE_ADD_SONG_TO_PLAYLIST = "AddSongToPlaylist";
+
+
 function isEmpty(obj) {
   for (var prop in obj) {
     if (obj.hasOwnProperty(prop)) return false;
@@ -19,13 +33,17 @@ module.exports = (io) => {
     console.log(`Client ${socket.id} is connected.`);
 
     // Join to room.
-    let roomName = socket.handshake.query.roomName;
+    let roomName = socket.handshake.query.roomName,
+        userName = socket.handshake.query.userName;
     socket.join(roomName);
 
     if (!rooms[roomName]) {
       rooms[roomName] = {
-        sockets: {},
-        playlist: []
+        socketUserMap: {},
+        playInfo: {
+          playlist: [],
+          currentPlayingIndex: 0 //Reserved for future use.
+        }
       };
     }
 
@@ -33,10 +51,16 @@ module.exports = (io) => {
 
     // Initiate the connection process as soon as the client connects
     // Old code: peers[socket.id] = socket;
-    rooms[roomName].sockets[socket.id] = socket;
+    rooms[roomName].socketUserMap[socket.id] = {
+      socket: socket,
+      userName: userName
+    };
+
+    // Initialize
+    socket.emit(SE_INIT, rooms[roomName].playInfo);
 
     // Asking all other clients to setup the peer connection receiver
-    socket.to(roomName).emit('initReceive', socket.id);
+    socket.to(roomName).emit(SE_NEW_USER_ADDED, socket.id, userName);
     // Old code:
     // for (let id in peers) {
     //   if (id === socket.id) continue;
@@ -44,16 +68,22 @@ module.exports = (io) => {
     //   peers[id].emit('initReceive', socket.id);
     // }
 
-    // Relay a peerconnection signal to a specific socket
+    // Send message to client to initiate a connection
+    // The sender has already setup a peer connection receiver
+    socket.on(SE_EXISTING_USER_NOTIFY, (init_socket_id, existingUserName) => {
+      console.log('EXISTING USER NOTIFY by ' + socket.id + ' for ' + init_socket_id);
+      rooms[roomName].socketUserMap[init_socket_id].socket.emit(SE_EXISTING_USER_NOTIFY, socket.id, existingUserName);
+    });
 
-    socket.on('signal', (data) => {
+    // Relay a peerconnection signal to a specific socket
+    socket.on(SE_SIGNAL, (data) => {
       // console.log('sending signal from ' + socket.id + ' to ', data);
       console.log(
         `Client ${socket.id} in room ${roomName} emitted 'Signal' event.`
       );
 
       // Old code: if (!peers[data.socket_id]) return;
-      if (!rooms[roomName].sockets[data.socket_id]) {
+      if (!rooms[roomName].socketUserMap[data.socket_id]) {
         return;
       }
 
@@ -63,7 +93,7 @@ module.exports = (io) => {
       //   signal: data.signal,
       // });
 
-      rooms[roomName].sockets[data.socket_id].emit('signal', {
+      rooms[roomName].socketUserMap[data.socket_id].socket.emit(SE_SIGNAL, {
         socket_id: socket.id,
         signal: data.signal,
       });
@@ -78,30 +108,22 @@ module.exports = (io) => {
     // });
 
     // Remove the disconnected peer connection from all other connected clients
-    socket.on('disconnect', () => {
+    socket.on(SE_DISCONNECT, () => {
       console.log('socket disconnected ' + socket.id);
-      socket.to(roomName).emit('removePeer', socket.id);
+      socket.to(roomName).emit(SE_USER_REMOVED, socket.id);
       // Old code: socket.broadcast.emit('removePeer', socket.id);
       // Old code: delete peers[socket.id];
-      delete rooms[roomName].sockets[socket.id];
+      delete rooms[roomName].socketUserMap[socket.id];
 
       // Delete room if there's no socket.
-      if (isEmpty(rooms[roomName].sockets)) {
+      if (isEmpty(rooms[roomName].socketUserMap)) {
         delete rooms[roomName];
         console.log(`Room ${roomName} was deleted because no one is in it.`);
       }
     });
 
-    // Send message to client to initiate a connection
-    // The sender has already setup a peer connection receiver
-
-    socket.on('initSend', (init_socket_id) => {
-      console.log('INIT SEND by ' + socket.id + ' for ' + init_socket_id);
-      rooms[roomName].sockets[init_socket_id].emit('initSend', socket.id, rooms[roomName].playlist);
-    });
-
     // Triggered when a user presses the play button
-    socket.on('play', function () {
+    socket.on(SE_PLAY, function () {
       // socket.broadcast.emit("play", roomName);
       // Old code:
       // for (let id in peers) {
@@ -113,11 +135,11 @@ module.exports = (io) => {
         `Client ${socket.id} in room ${roomName} emitted 'Play' event.`
       );
 
-      socket.to(roomName).emit('play');
+      socket.to(roomName).emit(SE_PLAY);
     });
 
     // Triggered when a user presses the pause button
-    socket.on('pause', function () {
+    socket.on(SE_PAUSE, function () {
       // socket.broadcast.emit("pause", roomName);
       // Old code:
       // for (let id in peers) {
@@ -128,7 +150,7 @@ module.exports = (io) => {
       console.log(
         `Client ${socket.id} in room ${roomName} emitted 'Pause' event.`
       );
-      socket.to(roomName).emit('pause');
+      socket.to(roomName).emit(SE_PAUSE);
     });
 
     // When user press the volumen + button and the volumn - button, we don't emit anything.
@@ -136,7 +158,7 @@ module.exports = (io) => {
     // And not all the people in the room.
 
     // Triggered when a user presses the "next" button
-    socket.on('next', function () {
+    socket.on(SE_NEXT, function () {
       // socket.broadcast.emit("next", roomName);
       // Old code:
       // for (let id in peers) {
@@ -148,11 +170,11 @@ module.exports = (io) => {
         `Client ${socket.id} in room ${roomName} emitted 'Next' event.`
       );
 
-      socket.to(roomName).emit('next');
+      socket.to(roomName).emit(SE_NEXT);
     });
 
     // Triggered when a user presses the "previous" button
-    socket.on('prev', function () {
+    socket.on(SE_PREV, function () {
       // socket.broadcast.emit("prev", roomName);
       // Old code:
       // for (let id in peers) {
@@ -163,18 +185,18 @@ module.exports = (io) => {
       console.log(
         `Client ${socket.id} in room ${roomName} emitted 'Prev' event.`
       );
-      socket.to(roomName).emit('prev');
+      socket.to(roomName).emit(SE_PREV);
     });
 
     // Triggered when a user presses the "Choose Song" button
-    socket.on('addSongToPlaylist', function (songUrl) {
+    socket.on(SE_ADD_SONG_TO_PLAYLIST, function (songUrl) {
       console.log(
         `Client ${socket.id} in room ${roomName} emitted 'addSongToPlaylist' event.`
       );
 
-      rooms[roomName].playlist.push(songUrl);
+      rooms[roomName].playInfo.playlist.push(songUrl);
 
-      socket.to(roomName).emit('addSongToPlaylist', songUrl);
+      socket.to(roomName).emit(SE_ADD_SONG_TO_PLAYLIST, songUrl);
     });
   });
 };

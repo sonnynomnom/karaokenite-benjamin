@@ -1,6 +1,19 @@
 // main.js is for index.html
 // main2.js is is for room.html
 
+// Socket event constants.
+const SE_INIT = "Init",
+      SE_NEW_USER_ADDED = "NewUserAdded",
+      SE_EXISTING_USER_NOTIFY = "ExistingUserNotify",
+      SE_USER_REMOVED = "UserRemoved",
+      SE_DISCONNECT = "disconnect", // Do not change this name because it is a system event.
+      SE_SIGNAL = "Signal",
+      SE_PLAY = "Play",
+      SE_PAUSE = "Pause",
+      SE_PREV = "Prev",
+      SE_NEXT = "Next",
+      SE_ADD_SONG_TO_PLAYLIST = "AddSongToPlaylist";
+
 // Socket.io socket
 var socket;
 
@@ -79,8 +92,8 @@ init();
 function init() {
   // Get room name
   let params = new URLSearchParams(window.location.search),
-    roomName = (params.get('room') || '').trim().replace(' ', '-'),
-    userName = (params.get('username') || '').trim().replace(' ', '-');
+      roomName = (params.get('room') || '').trim().replace(' ', '-'),
+      userName = (params.get('username') || '').trim().replace(' ', '-');
 
   // console.log('userName is', userName);
 
@@ -92,39 +105,44 @@ function init() {
   socket = io('/', {
     query: {
       roomName: roomName,
+      userName: userName
     },
   });
 
-  socket.on('initReceive', (socket_id) => {
-    console.log('INIT RECEIVE ' + socket_id);
-    addPeer(socket_id, false);
-
-    socket.emit('initSend', socket_id);
+  socket.on(SE_INIT, (playInfo) => {
+    console.log('INIT');
+    playlist.push(...playInfo.playlist);
   });
 
-  socket.on('initSend', (socket_id, playlist1) => {
-    console.log('INIT SEND ' + socket_id);
-    playlist.push(...playlist1);
-    addPeer(socket_id, true);
+  socket.on(SE_NEW_USER_ADDED, (socket_id, newUserName) => {
+    console.log('NEW USER ADDED ' + socket_id);
+    addPeer(socket_id, newUserName, false);
+
+    socket.emit(SE_EXISTING_USER_NOTIFY, socket_id, userName);
   });
 
-  socket.on('removePeer', (socket_id) => {
-    console.log('removing peer ' + socket_id);
+  socket.on(SE_EXISTING_USER_NOTIFY, (socket_id, existingUserName) => {
+    console.log('EXISTING USER NOTIFY ' + socket_id);    
+    addPeer(socket_id, existingUserName, true);
+  });
+
+  socket.on(SE_USER_REMOVED, (socket_id) => {
+    console.log('USER REMOVED ' + socket_id);
     removePeer(socket_id);
   });
 
-  socket.on('disconnect', () => {
+  socket.on(SE_DISCONNECT, () => {
     console.log('GOT DISCONNECTED');
     for (let socket_id in peers) {
       removePeer(socket_id);
     }
   });
 
-  socket.on('signal', (data) => {
+  socket.on(SE_SIGNAL, (data) => {
     peers[data.socket_id].signal(data.signal);
   });
 
-  socket.on('addSongToPlaylist', (songUrl) => {
+  socket.on(SE_ADD_SONG_TO_PLAYLIST, (songUrl) => {
     playlist.push(songUrl);
   });
 
@@ -146,7 +164,7 @@ function removePeer(socket_id) {
     });
 
     videoEl.srcObject = null;
-    videoEl.parentNode.removeChild(videoEl);
+    videoEl.parentNode.parentNode.removeChild(videoEl.parentNode);
   }
   if (peers[socket_id]) peers[socket_id].destroy();
   delete peers[socket_id];
@@ -159,15 +177,15 @@ function removePeer(socket_id) {
 //                  Set to true if the peer initiates the connection process.
 //                  Set to false if the peer receives the connection.
 
-function addPeer(socket_id, am_initiator) {
+function addPeer(socket_id, userName, am_initiator) {
   peers[socket_id] = new SimplePeer({
     initiator: am_initiator,
-    stream: localStream,
+    stream: am_initiator ? false : localStream,
     config: configuration,
   });
 
   peers[socket_id].on('signal', (data) => {
-    socket.emit('signal', {
+    socket.emit(SE_SIGNAL, {
       signal: data,
       socket_id: socket_id,
     });
@@ -202,11 +220,11 @@ function addPeer(socket_id, am_initiator) {
     // videos.appendChild(newVid);
 
     // Username:
-    let username = document.createElement('div');
-    username.className = 'user-name';
-    username.innerHTML = 'blahblah';
+    let elemUserName = document.createElement('div');
+    elemUserName.className = 'user-name';
+    elemUserName.innerHTML = userName;
     // username.innerHTML = userName;
-    user.appendChild(username);
+    user.appendChild(elemUserName);
   });
 }
 
