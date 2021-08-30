@@ -28,7 +28,8 @@ function nextFunction() {
   sonny1.emit(SE_NEXT, roomName);
   video_count++;
 
-  if (video_count == playlist.length) video_count = 0;
+  if (video_count > playlist.length - 1)
+    video_count = 0;
 
   var video = document.querySelector('#karaoke-video');
   var videoSync = document.querySelector('#karaoke-video source');
@@ -59,8 +60,8 @@ if (el.addEventListener) {
 function backFunction() {
   sonny1.emit(SE_PREV, roomName);
 
-  if (video_count != 0) {
-    video_count--;
+  if (video_count < 0) {
+    video_count = playlist.length - 1;
   }
 
   var video = document.querySelector('#karaoke-video');
@@ -76,7 +77,6 @@ function backFunction() {
 }
 
 // Down Button
-
 var el = document.getElementById('volumeDownButton');
 
 if (el.addEventListener) {

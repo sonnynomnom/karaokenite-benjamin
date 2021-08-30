@@ -112,6 +112,9 @@ function init() {
   socket.on(SE_INIT, (playInfo) => {
     console.log('INIT');
     playlist.push(...playInfo.playlist);
+    video_count = playInfo.currentPlayingIndex;
+    playInfo.isPlaying;
+    console.log(video_count, playInfo.isPlaying);
   });
 
   socket.on(SE_NEW_USER_ADDED, (socket_id, newUserName) => {

@@ -42,7 +42,8 @@ module.exports = (io) => {
         socketUserMap: {},
         playInfo: {
           playlist: [],
-          currentPlayingIndex: 0 //Reserved for future use.
+          currentPlayingIndex: 0,
+          isPlaying: false
         }
       };
     }
@@ -135,6 +136,8 @@ module.exports = (io) => {
         `Client ${socket.id} in room ${roomName} emitted 'Play' event.`
       );
 
+      rooms[roomName].playInfo.isPlaying = true;
+
       socket.to(roomName).emit(SE_PLAY);
     });
 
@@ -150,6 +153,9 @@ module.exports = (io) => {
       console.log(
         `Client ${socket.id} in room ${roomName} emitted 'Pause' event.`
       );
+
+      rooms[roomName].playInfo.isPlaying = false;
+
       socket.to(roomName).emit(SE_PAUSE);
     });
 
@@ -170,6 +176,10 @@ module.exports = (io) => {
         `Client ${socket.id} in room ${roomName} emitted 'Next' event.`
       );
 
+      rooms[roomName].playInfo.currentPlayingIndex ++;
+      if (rooms[roomName].playInfo.currentPlayingIndex > rooms[roomName].playInfo.playlist.length - 1)
+        rooms[roomName].playInfo.currentPlayingIndex = 0;
+
       socket.to(roomName).emit(SE_NEXT);
     });
 
@@ -185,6 +195,11 @@ module.exports = (io) => {
       console.log(
         `Client ${socket.id} in room ${roomName} emitted 'Prev' event.`
       );
+
+      rooms[roomName].playInfo.currentPlayingIndex --;
+      if (rooms[roomName].playInfo.currentPlayingIndex < 0)
+        rooms[roomName].playInfo.currentPlayingIndex = rooms[roomName].playInfo.playlist.length - 1;
+
       socket.to(roomName).emit(SE_PREV);
     });
 
