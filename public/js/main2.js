@@ -323,7 +323,10 @@ function removeLocalStream() {
 let muteButton = document.getElementById('muteButton');
 // console.log(muteButton);
 let muteButtonIcon = document.getElementById('muteButtonIcon');
+
 let hideCameraButton = document.getElementById('hideCameraButton');
+let hideCameraButtonIcon = document.getElementById('hideCameraButtonIcon');
+
 let leaveRoomButton = document.getElementById('leaveRoomButton');
 
 let muteFlag = false;
@@ -348,8 +351,10 @@ hideCameraButton.addEventListener('click', function () {
   if (hideCameraFlag) {
     localStream.getTracks()[1].enabled = false;
     // hideCameraButton.textContent = "Show Camera";
+    hideCameraButtonIcon.src = 'https://cdn.glitch.com/b316bbdc-0b0c-4c6d-94fb-fffb37f510a9%2FVideo-Camera-Slash.svg?v=1630962345127';
   } else {
     localStream.getTracks()[1].enabled = true;
     // hideCameraButton.textContent = "Hide Camera";
+    hideCameraButtonIcon.src = 'https://cdn.glitch.com/f69fa717-be61-48e8-9ad2-e8edd524fe90%2Ficon_camera_white.svg?v=1614747337937';
   }
 });
