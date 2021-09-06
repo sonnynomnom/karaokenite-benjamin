@@ -119,6 +119,19 @@ function volumnUpFunction() {
   console.log('Volume set to low');
 }
 
+sonny1.on(SE_GET_PLAY_INFO, (sender) => {
+  let video = document.querySelector('#karaoke-video');
+
+  sonny1.emit(
+    SE_GET_PLAY_INFO,
+    sender,
+    {
+      currentPlayingIndex: video_count,
+      currentPlayingTime: video.currentTime
+    }
+  );
+});
+
 sonny1.on(SE_PREV, function () {
   console.log('prev event gotten on the client');
 

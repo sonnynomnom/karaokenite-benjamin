@@ -12,7 +12,8 @@ const SE_INIT = "Init",
       SE_PAUSE = "Pause",
       SE_PREV = "Prev",
       SE_NEXT = "Next",
-      SE_ADD_SONG_TO_PLAYLIST = "AddSongToPlaylist";
+      SE_ADD_SONG_TO_PLAYLIST = "AddSongToPlaylist",
+      SE_GET_PLAY_INFO = "GetPlayInfo";
 
 // Socket.io socket
 var socket;
@@ -113,8 +114,7 @@ function init() {
     console.log('INIT');
     playlist.push(...playInfo.playlist);
     video_count = playInfo.currentPlayingIndex;
-    playInfo.isPlaying;
-    console.log(video_count, playInfo.isPlaying);
+    console.log(playInfo);
   });
 
   socket.on(SE_NEW_USER_ADDED, (socket_id, newUserName) => {

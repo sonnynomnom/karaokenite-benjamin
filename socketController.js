@@ -12,14 +12,37 @@ const SE_INIT = "Init",
       SE_PAUSE = "Pause",
       SE_PREV = "Prev",
       SE_NEXT = "Next",
-      SE_ADD_SONG_TO_PLAYLIST = "AddSongToPlaylist";
+      SE_ADD_SONG_TO_PLAYLIST = "AddSongToPlaylist",
+      SE_GET_PLAY_INFO = "GetPlayInfo";
 
 
 function isEmpty(obj) {
   for (var prop in obj) {
-    if (obj.hasOwnProperty(prop)) return false;
+    if (obj.hasOwnProperty(prop))
+      return false;
   }
+
   return true;
+}
+
+function getKeyCount(obj) {
+  let count = 0;
+
+  for (let prop in obj) {
+    if (obj.hasOwnProperty(prop))
+      count ++;
+  }
+
+  return count;
+}
+
+function getFirstValue(obj) {
+  for (let prop in obj) {
+    if (obj.hasOwnProperty(prop))
+      return obj[prop];
+  }
+
+  return null;
 }
 
 module.exports = (io) => {
@@ -43,12 +66,15 @@ module.exports = (io) => {
         playInfo: {
           playlist: [],
           currentPlayingIndex: 0,
+          currentPlayingTime: 0,
           isPlaying: false
         }
       };
     }
 
     console.log(`Client ${socket.id} joined to room ${roomName}`);
+
+    let firstUser = getFirstValue(rooms[roomName].socketUserMap);
 
     // Initiate the connection process as soon as the client connects
     // Old code: peers[socket.id] = socket;
@@ -58,7 +84,20 @@ module.exports = (io) => {
     };
 
     // Initialize
-    socket.emit(SE_INIT, rooms[roomName].playInfo);
+    socket.on(SE_GET_PLAY_INFO, (sender, playInfo) => {
+      rooms[roomName].playInfo.currentPlayingIndex = playInfo.currentPlayingIndex;
+      rooms[roomName].playInfo.currentPlayingTime = playInfo.currentPlayingTime;
+
+      if (rooms[roomName].socketUserMap[sender])
+        rooms[roomName].socketUserMap[sender].socket.emit(SE_INIT, rooms[roomName].playInfo);
+    });
+
+    // Get play info.
+    if (firstUser) {
+      firstUser.socket.emit(SE_GET_PLAY_INFO, socket.id);
+    } else {
+      socket.emit(SE_INIT, rooms[roomName].playInfo);
+    }
 
     // Asking all other clients to setup the peer connection receiver
     socket.to(roomName).emit(SE_NEW_USER_ADDED, socket.id, userName);
