@@ -114,7 +114,26 @@ function init() {
     console.log('INIT');
     playlist.push(...playInfo.playlist);
     video_count = playInfo.currentPlayingIndex;
-    console.log(playInfo);
+
+    var video = document.querySelector('#karaoke-video');
+    var videoSync = document.querySelector('#karaoke-video source');
+
+    video.pause();
+    videoSync.setAttribute('src', playlist[video_count]);
+    videoSync.setAttribute('currentTime', 0);
+    video.load();
+    video.currentTime = playInfo.currentPlayingTime;
+
+    if (playInfo.isPlaying) {
+      // For preventing this error: Uncaught (in promise) DOMException: play() failed because the user didn't interact with the document first.
+      video.muted = true;
+      video.play();
+      // if (playPromise) {
+      //   playPromise.then(() => {
+      //     // video.muted = false;
+      //   }).catch((e) => {});
+      // }
+    }
   });
 
   socket.on(SE_NEW_USER_ADDED, (socket_id, newUserName) => {

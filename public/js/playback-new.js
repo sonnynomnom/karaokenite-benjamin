@@ -126,6 +126,7 @@ sonny1.on(SE_GET_PLAY_INFO, (sender) => {
     SE_GET_PLAY_INFO,
     sender,
     {
+      isPlaying: !video.paused && !video.ended,
       currentPlayingIndex: video_count,
       currentPlayingTime: video.currentTime
     }

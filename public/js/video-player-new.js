@@ -42,7 +42,7 @@
 
     // Obtain handles to buttons and other elements
     var playpause = document.getElementById('playpauseButton');
-    var mute = document.getElementById('mute');
+    var mute = document.getElementById('muteButton');
     var volinc = document.getElementById('volinc');
     var voldec = document.getElementById('voldec');
     var progress = document.getElementById('progress');

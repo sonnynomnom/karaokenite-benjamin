@@ -85,6 +85,7 @@ module.exports = (io) => {
 
     // Initialize
     socket.on(SE_GET_PLAY_INFO, (sender, playInfo) => {
+      rooms[roomName].playInfo.isPlaying = playInfo.isPlaying;
       rooms[roomName].playInfo.currentPlayingIndex = playInfo.currentPlayingIndex;
       rooms[roomName].playInfo.currentPlayingTime = playInfo.currentPlayingTime;
 
