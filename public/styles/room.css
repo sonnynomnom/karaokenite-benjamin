@@ -516,7 +516,8 @@ button[data-state="mute"] {
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  min-height: 10rem;
+  /* Commented out because of weird stacking bug - Sonny */
+  /* min-height: 10rem; */
   text-align: left;
   position: relative;
   outline: 0;
