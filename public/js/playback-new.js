@@ -60,6 +60,7 @@ if (el.addEventListener) {
 function backFunction() {
   sonny1.emit(SE_PREV, roomName);
 
+  video_count --;
   if (video_count < 0) {
     video_count = playlist.length - 1;
   }
