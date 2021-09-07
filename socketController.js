@@ -218,7 +218,7 @@ module.exports = (io) => {
 
       rooms[roomName].playInfo.currentPlayingIndex ++;
       if (rooms[roomName].playInfo.currentPlayingIndex > rooms[roomName].playInfo.playlist.length - 1)
-        rooms[roomName].playInfo.currentPlayingIndex = 0;
+        rooms[roomName].playInfo.currentPlayingIndex = rooms[roomName].playInfo.playlist.length - 1;
 
       socket.to(roomName).emit(SE_NEXT);
     });
@@ -238,7 +238,7 @@ module.exports = (io) => {
 
       rooms[roomName].playInfo.currentPlayingIndex --;
       if (rooms[roomName].playInfo.currentPlayingIndex < 0)
-        rooms[roomName].playInfo.currentPlayingIndex = rooms[roomName].playInfo.playlist.length - 1;
+        rooms[roomName].playInfo.currentPlayingIndex = 0;
 
       socket.to(roomName).emit(SE_PREV);
     });

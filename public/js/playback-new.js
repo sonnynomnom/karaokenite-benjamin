@@ -26,10 +26,10 @@ var video_count = 0;
 function nextFunction() {
   console.log('nextFunction!');
   sonny1.emit(SE_NEXT, roomName);
-  video_count++;
 
+  video_count++;
   if (video_count > playlist.length - 1)
-    video_count = 0;
+    video_count = playlist.length - 1;
 
   var video = document.querySelector('#karaoke-video');
   var videoSync = document.querySelector('#karaoke-video source');
@@ -62,7 +62,7 @@ function backFunction() {
 
   video_count --;
   if (video_count < 0) {
-    video_count = playlist.length - 1;
+    video_count = 0;
   }
 
   var video = document.querySelector('#karaoke-video');
@@ -137,8 +137,9 @@ sonny1.on(SE_GET_PLAY_INFO, (sender) => {
 sonny1.on(SE_PREV, function () {
   console.log('prev event gotten on the client');
 
-  if (video_count != 0) {
-    video_count--;
+  video_count--;
+  if (video_count < 0) {
+    video_count = 0;
   }
 
   var video = document.querySelector('#karaoke-video');
@@ -157,8 +158,8 @@ sonny1.on(SE_NEXT, function () {
   console.log('Next event gotten on the client');
 
   video_count++;
-
-  if (video_count == playlist.length) video_count = 0;
+  if (video_count > playlist.length - 1)
+    video_count = playlist.length - 1;
 
   var video = document.querySelector('#karaoke-video');
   var videoSync = document.querySelector('#karaoke-video source');
