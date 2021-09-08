@@ -254,6 +254,26 @@
   transition: opacity 0.2s ease-in;
 }
 
+/* Glowing animation */
+
+#playlistButton {
+  animation: glowing 3000ms 12;
+}
+
+@keyframes glowing {
+  0% {
+    /* filter: drop-shadow(0px 0px 1px #fff) */
+  }
+  50% {
+    filter: drop-shadow(0px 0px 1px #fff)
+    drop-shadow(0px 0px 2px #FFB48E)
+    drop-shadow(0px 0px 3px #FF8647)
+  }
+  100% {
+    /* filter: drop-shadow(0px 0px 1px #fff) */
+  }
+}
+
 /* ================ Footer ================== */
 
 footer {
